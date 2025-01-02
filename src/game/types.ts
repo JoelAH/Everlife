@@ -43,7 +43,7 @@ export interface GameState {
 
 export interface Location {
   name: string;
-  description: string;
+  description?: string;
   environmentalThreat?: string;
   crisis?: {
     type: string;

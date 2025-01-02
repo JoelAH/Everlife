@@ -49,7 +49,7 @@ const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   switch (power.name) {
     case 'water_blast':
       if (location.crisis?.type === 'drought' || location.crisis?.type === 'wildfire') {
-        effectiveMessage = location.crisis.type === 'drought' 
+        effectiveMessage = location.crisis.type === 'drought'
           ? 'Your water blast provides much-needed moisture to the parched earth!'
           : 'Your water blast helps contain the spreading fires!';
         environmentalEffect = 5;
@@ -68,7 +68,7 @@ const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
       ...state,
       environmentStatus: Math.min(100, state.environmentStatus + environmentalEffect),
       messages: [
-        ...state.messages, 
+        ...state.messages,
         effectiveMessage,
         `The Earth's health has improved by ${environmentalEffect}%!`
       ]

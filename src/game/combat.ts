@@ -3,13 +3,13 @@ import { Enemy, ElementalPower, PlayerStats } from './types';
 // Utility function to calculate damage with elemental effectiveness
 export const calculateDamage = (power: ElementalPower, enemy: Enemy): number => {
   let multiplier = 1;
-  
+
   // Enhanced damage against certain enemy types
   if (power.element === 'water' && enemy.type === 'fire') multiplier = 2;
   if (power.element === 'earth' && enemy.type === 'pollution') multiplier = 1.5;
   if (power.element === 'wind' && enemy.type === 'corruption') multiplier = 1.5;
   if (power.element === 'fire' && enemy.type === 'machine') multiplier = 2;
-  
+
   return power.damage * multiplier;
 };
 

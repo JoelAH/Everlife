@@ -57,10 +57,10 @@ const GameContainer: React.FC = () => {
       harmony: 70
     },
     messages: [
-      'Welcome to EverLife - A Journey to Save Earth',
-      'You are a chosen guardian, blessed with elemental powers by the ancient spirits.',
-      'Your mission: Save this land from environmental destruction.',
-      'Type "look" to examine your surroundings or "help" for commands.'
+      `Welcome to EverLife - A Journey to Save Earth. 
+      You are a chosen guardian, blessed with elemental powers by the ancient spirits. 
+      Your mission: Save this land from environmental destruction. 
+      Click "Look Around" to examine your surroundings.`
     ],
     inventory: [],
     elementalPowers: [
@@ -130,10 +130,7 @@ const GameContainer: React.FC = () => {
       <StyledPaper elevation={3}>
         <Grid container spacing={3}>
           <Grid item xs={12} style={{ textAlign: 'center' }}>
-            <Typography variant="h3" color="primary" gutterBottom align="center">
-              EverLife: The Last Cycle
-            </Typography>
-            <img src={logo} width={'200px'} />
+            <img src={logo} width={'150px'} />
           </Grid>
           
           {gameState.mode === 'combat' && gameState.currentEnemy && (
