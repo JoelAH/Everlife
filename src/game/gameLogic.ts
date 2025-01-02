@@ -46,7 +46,7 @@ const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   let effectiveMessage = '';
   let environmentalEffect = 0;
 
-  switch (power) {
+  switch (power.name) {
     case 'water_blast':
       if (location.crisis?.type === 'drought' || location.crisis?.type === 'wildfire') {
         effectiveMessage = location.crisis.type === 'drought' 
@@ -97,7 +97,13 @@ export const processCommand = (command: string, state: GameState): GameState => 
     case 'move':
       return handleMovement(words[1], state);
     case 'use':
-      return handlePowerUse(words.slice(1).join(' '), state);
+      return handlePowerUse({
+        name: action,
+        element: 'water',
+        damage: 0,
+        energyCost: 0,
+        description: ''
+      }, state);
     case 'look':
       return handleLook(state);
     case 'help':
@@ -189,50 +195,11 @@ const handleLook = (state: GameState): GameState => {
   };
 };
 
-const handleTake = (item: string, state: GameState): GameState => {
-  const currentLocation = locations[state.currentLocation];
-  if (currentLocation.items.includes(item)) {
-    const updatedLocationItems = currentLocation.items.filter(i => i !== item);
-    locations[state.currentLocation].items = updatedLocationItems;
-    return {
-      ...state,
-      inventory: [...state.inventory, item],
-      messages: [...state.messages, `You take the ${item}.`],
-    };
-  } else {
-    return {
-      ...state,
-      messages: [...state.messages, `There is no ${item} here.`],
-    };
-  }
-};
 
-const handleDrop = (item: string, state: GameState): GameState => {
-  if (state.inventory.includes(item)) {
-    const updatedInventory = state.inventory.filter(i => i !== item);
-    locations[state.currentLocation].items.push(item);
-    return {
-      ...state,
-      inventory: updatedInventory,
-      messages: [...state.messages, `You drop the ${item}.`],
-    };
-  } else {
-    return {
-      ...state,
-      messages: [...state.messages, `You don't have a ${item} to drop.`],
-    };
-  }
-};
 
-const handleInventory = (state: GameState): GameState => {
-  const inventoryMessage = state.inventory.length > 0
-    ? `You are carrying: ${state.inventory.join(', ')}.`
-    : 'Your inventory is empty.';
-  return {
-    ...state,
-    messages: [...state.messages, inventoryMessage],
-  };
-};
+
+
+
 
 const handleHelp = (state: GameState): GameState => {
   const helpMessage = `
