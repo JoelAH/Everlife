@@ -37,6 +37,7 @@ export const processCombatTurn = (
   updatedPlayer.energy -= power.energyCost;
 
   // Handle healing powers
+  let damage = 0;
   if (power.name === "Healing Rain") {
     const healing = 20;
     updatedPlayer.health = Math.min(updatedPlayer.maxHealth, updatedPlayer.health + healing);
@@ -47,7 +48,7 @@ export const processCombatTurn = (
     turnMessages.push("Earth Shield reduces incoming damage!");
   } else {
     // Calculate and apply damage for offensive powers
-    const damage = calculateDamage(power, enemy);
+    damage = calculateDamage(power, enemy);
     updatedEnemy.health = Math.max(0, updatedEnemy.health - damage);
   }
 

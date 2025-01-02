@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Paper, Typography, TextField, Button, Grid } from '@mui/material';
+import { Box, Paper, Typography, Button, Grid } from '@mui/material';
+import TypeWriter from './TypeWriter';
 import { styled } from '@mui/material/styles';
 import { GameState, ElementalPower } from '../game/types';
 import { processCommand, locations } from '../game/gameLogic';
 import { processCombatTurn, isCombatOver } from '../game/combat';
 import CombatView from './CombatView';
+import logo from '../assets/logo.png'
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -127,10 +129,11 @@ const GameContainer: React.FC = () => {
     <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
       <StyledPaper elevation={3}>
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid item xs={12} style={{ textAlign: 'center' }}>
             <Typography variant="h3" color="primary" gutterBottom align="center">
-              EverLife
+              EverLife: The Last Cycle
             </Typography>
+            <img src={logo} width={'200px'} />
           </Grid>
           
           {gameState.mode === 'combat' && gameState.currentEnemy && (
@@ -147,9 +150,7 @@ const GameContainer: React.FC = () => {
           <Grid item xs={12} md={8}>
             <MessageBox>
               {gameState.messages.map((message, index) => (
-                <Typography key={index} sx={{ mb: 1, borderLeft: '3px solid #4CAF50', pl: 2 }}>
-                  {message}
-                </Typography>
+                <TypeWriter key={index} text={message} delay={30} />
               ))}
             </MessageBox>
             
