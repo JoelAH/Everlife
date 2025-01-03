@@ -1,38 +1,6 @@
 import { ElementalPower, GameState } from './types';
-
-export const locations: Record<string, any> = {
-  'Scorched Plains Entry': {
-    name: 'Scorched Plains Entry',
-    description: 'You stand at the edge of a once-fertile land, now reduced to cracked earth and withered vegetation. The air is thick with smoke and ash.',
-    environmentalThreat: 'Severe drought and uncontrolled fires',
-    crisis: {
-      type: 'drought',
-      severity: 8,
-      description: 'The land is parched and dying, with small fires sprouting spontaneously in the distance.'
-    },
-    exits: ['Water Spirit Shrine', 'Burning Forest'],
-    items: ['water_crystal']
-  },
-  'Water Spirit Shrine': {
-    name: 'Water Spirit Shrine',
-    description: 'An ancient shrine dedicated to the water spirits. Despite the surrounding desolation, a small spring still flows here.',
-    exits: ['Scorched Plains Entry'],
-    items: ['spirit_essence'],
-    environmentalThreat: 'Water source contamination'
-  },
-  'Burning Forest': {
-    name: 'Burning Forest',
-    description: 'What was once a lush forest is now a maze of burning trees and thick smoke. The destruction is overwhelming.',
-    environmentalThreat: 'Uncontrolled forest fires',
-    crisis: {
-      type: 'wildfire',
-      severity: 9,
-      description: 'The forest is being consumed by an inferno, threatening to spread to other regions.'
-    },
-    exits: ['Scorched Plains Entry'],
-    items: ['fire_suppressant']
-  }
-};
+import { generateEnemyEncounter } from './combat';
+import { enemies, locations } from './states';
 
 const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   if (!state.elementalPowers.includes(power)) {
@@ -81,13 +49,6 @@ const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   };
 };
 
-const handleEnvironmentStatus = (state: GameState): GameState => {
-  return {
-    ...state,
-    messages: [...state.messages, `Current environment status: ${state.environmentStatus}`]
-  };
-};
-
 export const processCommand = (command: string, state: GameState): GameState => {
   const words = command.toLowerCase().split(' ');
   const action = words[0];
@@ -104,12 +65,8 @@ export const processCommand = (command: string, state: GameState): GameState => 
         energyCost: 0,
         description: ''
       }, state);
-    case 'look':
+    case 'forward':
       return handleLook(state);
-    case 'help':
-      return handleHelp(state);
-    case 'status':
-      return handleEnvironmentStatus(state);
 
     default:
       return {
@@ -118,38 +75,6 @@ export const processCommand = (command: string, state: GameState): GameState => 
       };
   }
 };
-
-import { generateEnemyEncounter } from './combat';
-
-const enemies = [
-  {
-    name: "Smoke Wraith",
-    health: 50,
-    maxHealth: 50,
-    attack: 8,
-    experience: 20,
-    type: "pollution",
-    description: "A malevolent entity born from toxic emissions"
-  },
-  {
-    name: "Acid Rain Specter",
-    health: 45,
-    maxHealth: 45,
-    attack: 12,
-    experience: 25,
-    type: "corruption",
-    description: "Corrupted water spirit spreading pollution"
-  },
-  {
-    name: "Industrial Golem",
-    health: 80,
-    maxHealth: 80,
-    attack: 15,
-    experience: 35,
-    type: "machine",
-    description: "A construct of industrial waste and machinery"
-  }
-];
 
 const handleMovement = (direction: string, state: GameState): GameState => {
   const currentLocation = locations[state.currentLocation];
@@ -191,29 +116,9 @@ const handleLook = (state: GameState): GameState => {
     : 'There are no items of interest here.';
   return {
     ...state,
-    messages: [...state.messages, currentLocation.description, itemsDescription],
-  };
-};
-
-
-
-
-
-
-
-const handleHelp = (state: GameState): GameState => {
-  const helpMessage = `
-    Available Commands:
-    - go [location]: Move to a new area
-    - use [power]: Use an elemental power
-    - look: Examine your surroundings
-    - status: Check environmental conditions
-    - help: Show this help message
-
-    Your elemental powers: ${state.elementalPowers.join(', ')}
-  `;
-  return {
-    ...state,
-    messages: [...state.messages, helpMessage],
+    messages: ['Enemy appeared'],
+    currentEnemy: enemies[0],
+    mode: 'combat'
+    //messages: [...state.messages, currentLocation.description, itemsDescription],
   };
 };
