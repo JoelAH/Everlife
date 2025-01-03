@@ -1,4 +1,5 @@
 import './App.css'
+import './styles/responsive.css'
 import GameContainer from './components/GameContainer'
 
 function App() {

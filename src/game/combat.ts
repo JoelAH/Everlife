@@ -46,6 +46,11 @@ export const processCombatTurn = (
     // Reduce incoming damage for this turn
     enemy.attack = Math.floor(enemy.attack * 0.5);
     turnMessages.push("Earth Shield reduces incoming damage!");
+  } else if (power.name === 'Re-energize') {
+    // no damage or energy lost. Just recharge energy
+    const energize = 20;
+    updatedPlayer.energy = Math.min(updatedPlayer.maxEnergy, updatedPlayer.energy + energize);
+    turnMessages.push(`Re-energize restores ${energize} energy!`);
   } else {
     // Calculate and apply damage for offensive powers
     damage = calculateDamage(power, enemy);

@@ -1,6 +1,6 @@
 import { ElementalPower, GameState } from './types';
 import { generateEnemyEncounter } from './combat';
-import { enemies, locations } from './states';
+import { enemies, ENEMY_APPEARED_MESSAGE, locations } from './states';
 
 const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   if (!state.elementalPowers.includes(power)) {
@@ -116,7 +116,7 @@ const handleLook = (state: GameState): GameState => {
     : 'There are no items of interest here.';
   return {
     ...state,
-    messages: ['Enemy appeared'],
+    messages: [...state.messages, ENEMY_APPEARED_MESSAGE],
     currentEnemy: enemies[0],
     mode: 'combat'
     //messages: [...state.messages, currentLocation.description, itemsDescription],

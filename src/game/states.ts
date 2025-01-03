@@ -1,5 +1,7 @@
 import { Enemy, GameState } from "./types";
 
+export const ENEMY_APPEARED_MESSAGE ='Enemy appeared!';
+
 export const locations: Record<string, any> = {
     'Scorched Plains Entry': {
         name: 'Scorched Plains Entry',
@@ -66,6 +68,7 @@ export const enemies: Enemy[] = [
 
 export const GAME_STATE: GameState[] = [
     {
+        step: 1,
         mode: 'exploration',
         currentLocation: 'Scorched Plains Entry',
         playerStats: {
@@ -74,7 +77,6 @@ export const GAME_STATE: GameState[] = [
             energy: 100,
             maxEnergy: 100,
             experience: 0,
-            level: 1,
             harmony: 70
         },
         messages: [
@@ -112,6 +114,13 @@ export const GAME_STATE: GameState[] = [
                 damage: 20,
                 energyCost: 30,
                 description: "Channel the anger of the wounded Earth"
+            },
+            {
+                name: "Re-energize",
+                element: "misc",
+                damage: 0,
+                energyCost: 0,
+                description: "Call upon the elemental spirits for energy."
             }
         ],
         environmentStatus: 70,

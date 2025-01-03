@@ -1,6 +1,6 @@
 export type GameMode = 'exploration' | 'combat' | 'story' | 'inventory';
 
-export type ElementType = 'water' | 'earth' | 'wind' | 'fire';
+export type ElementType = 'water' | 'earth' | 'wind' | 'fire' | 'misc';
 
 export interface ElementalPower {
   name: string;
@@ -16,7 +16,6 @@ export interface PlayerStats {
   energy: number;
   maxEnergy: number;
   experience: number;
-  level: number;
   harmony: number;
 }
 
@@ -31,6 +30,7 @@ export interface Enemy {
 }
 
 export interface GameState {
+  step: number;
   mode: GameMode;
   currentLocation: string;
   playerStats: PlayerStats;

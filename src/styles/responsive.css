@@ -1,0 +1,36 @@
+/* Responsive styles */
+@media (max-width: 600px) {
+  .MuiBox-root {
+    padding: 8px !important;
+  }
+
+  .MuiGrid-container {
+    margin-top: 0 !important;
+  }
+
+  .MuiGrid-item {
+    padding: 8px !important;
+  }
+  .MuiPaper-root {
+    padding: 8px !important;
+  }
+  
+  .message-box {
+    height: 300px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  img[src*="logo"] {
+    width: 100px !important;
+  }
+  
+  .MuiButton-root {
+    font-size: 0.8rem !important;
+    padding: 4px 8px !important;
+  }
+  
+  .MuiTypography-root {
+    font-size: 0.9rem !important;
+  }
+}
