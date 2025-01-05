@@ -1,6 +1,6 @@
 import { ElementalPower, GameState } from './types';
 import { generateEnemyEncounter } from './combat';
-import { enemies, ENEMY_APPEARED_MESSAGE, locations } from './states';
+import { enemies, ENEMY_APPEARED_MESSAGE, GAME_STATE, locations } from './states';
 
 const handlePowerUse = (power: ElementalPower, state: GameState): GameState => {
   if (!state.elementalPowers.includes(power)) {
@@ -54,71 +54,111 @@ export const processCommand = (command: string, state: GameState): GameState => 
   const action = words[0];
 
   switch (action) {
-    case 'go':
-    case 'move':
-      return handleMovement(words[1], state);
-    case 'use':
-      return handlePowerUse({
-        name: action,
-        element: 'water',
-        damage: 0,
-        energyCost: 0,
-        description: ''
-      }, state);
+    // case 'go':
+    // case 'move':
+    //   return handleMovement(words[1], state);
+    // case 'use':
+    //   return handlePowerUse({
+    //     name: action,
+    //     element: 'water',
+    //     damage: 0,
+    //     energyCost: 0,
+    //     description: ''
+    //   }, state);
     case 'forward':
-      return handleLook(state);
+      return handleForward(state);
 
     default:
       return {
         ...state,
-        messages: [...state.messages, `I don't understand '${command}'. Type 'help' for a list of commands.`],
+        messages: [...state.messages, `I don't understand '${command}'.`],
       };
   }
 };
 
-const handleMovement = (direction: string, state: GameState): GameState => {
-  const currentLocation = locations[state.currentLocation];
-  if (!currentLocation.exits.includes(direction)) {
-    return {
-      ...state,
-      messages: [...state.messages, `You can't go to ${direction} from here.`],
-    };
-  }
+// const handleMovement = (direction: string, state: GameState): GameState => {
+//   // const currentLocation = locations[state.currentLocation];
+//   // if (!currentLocation.exits.includes(direction)) {
+//   //   return {
+//   //     ...state,
+//   //     messages: [...state.messages, `You can't go to ${direction} from here.`],
+//   //   };
+//   // }
 
+//   const possibleEnemy = generateEnemyEncounter(enemies);
+//   if (possibleEnemy) {
+//     return {
+//       ...state,
+//       mode: 'combat',
+//       currentLocation: direction,
+//       currentEnemy: possibleEnemy,
+//       messages: [
+//         ...state.messages,
+//         `You move to the ${direction}.`,
+//         locations[direction].description,
+//         `A ${possibleEnemy.name} appears!`,
+//         possibleEnemy.description
+//       ],
+//     };
+//   }
+
+//   return {
+//     ...state,
+//     currentLocation: direction,
+//     messages: [...state.messages, `You move to the ${direction}.`, locations[direction].description],
+//   };
+// };
+
+const handleForward = (state: GameState): GameState => {
   const possibleEnemy = generateEnemyEncounter(enemies);
-  if (possibleEnemy) {
+  console.log('1', possibleEnemy);
+  if (possibleEnemy && state.mode !== 'combat' && (state.step !== 1 && state.step !== 2)) {
     return {
       ...state,
       mode: 'combat',
-      currentLocation: direction,
       currentEnemy: possibleEnemy,
       messages: [
         ...state.messages,
-        `You move to the ${direction}.`,
-        locations[direction].description,
-        `A ${possibleEnemy.name} appears!`,
+        ENEMY_APPEARED_MESSAGE,
         possibleEnemy.description
       ],
     };
+  } else {
+    if (state.step) {
+      console.log('2', state.step);
+      let newStep = state.step + 1;
+      let newState = GAME_STATE.find(s => s.step === newStep);
+      while(!newState) {
+        newStep = newStep + 1;
+        newState = GAME_STATE.find(s => s.step === newStep)
+      }
+      
+      return {
+        ...newState,
+        messages: [
+          ...state.messages,
+          ...newState.messages
+        ],
+        playerStats: state.playerStats,
+        inventory: state.inventory,
+        elementalPowers: state.elementalPowers,
+        environmentStatus: state.environmentStatus
+      }
+    }
+
+    return state;
   }
-
-  return {
-    ...state,
-    currentLocation: direction,
-    messages: [...state.messages, `You move to the ${direction}.`, locations[direction].description],
-  };
 };
-
-const handleLook = (state: GameState): GameState => {
-  const currentLocation = locations[state.currentLocation];
-  const itemsDescription = currentLocation.items.length > 0
-    ? `You see the following items: ${currentLocation.items.join(', ')}.`
-    : 'There are no items of interest here.';
-  return {
-    ...state,
-    messages: [...state.messages, ENEMY_APPEARED_MESSAGE],
-    currentEnemy: enemies[0],
-    mode: 'combat'
-    //messages: [...state.messages, currentLocation.description, itemsDescription],
-  };
-};
+// const handleLook = (state: GameState): GameState => {
+//   const currentLocation = locations[state.currentLocation];
+//   const itemsDescription = currentLocation.items.length > 0
+//     ? `You see the following items: ${currentLocation.items.join(', ')}.`
+//     : 'There are no items of interest here.';
+//   return {
+//     ...state,
+//     messages: [...state.messages, ENEMY_APPEARED_MESSAGE],
+//     currentEnemy: enemies[0],
+//     mode: 'combat'
+//     //messages: [...state.messages, currentLocation.description, itemsDescription],
+//   };
+// };

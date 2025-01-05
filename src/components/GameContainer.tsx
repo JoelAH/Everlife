@@ -3,12 +3,12 @@ import { Box, Paper, Typography, Button, Grid } from '@mui/material';
 import TypeWriter from './TypeWriter';
 import { styled } from '@mui/material/styles';
 import { BoxOwnProps } from '@mui/system';
-import { GameState, ElementalPower } from '../game/types';
+import { GameState, ElementalPower, Enemy } from '../game/types';
 import { processCommand } from '../game/gameLogic';
-import { processCombatTurn, isCombatOver } from '../game/combat';
+import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game/combat';
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
-import { GAME_STATE } from '../game/states';
+import { enemies, GAME_STATE } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
   gameState?: GameState;
@@ -58,7 +58,14 @@ const GameContainer: React.FC = () => {
 
     const { updatedPlayer, updatedEnemy, turnMessages } = processCombatTurn(
       power,
-      gameState.playerStats,
+      gameState.playerStats || {
+        health: 100,
+        maxHealth: 100,
+        energy: 100,
+        maxEnergy: 100,
+        experience: 0,
+        harmony: 70
+      },
       gameState.currentEnemy
     );
 
@@ -66,7 +73,7 @@ const GameContainer: React.FC = () => {
 
     setGameState((prevState) => ({
       ...prevState,
-      mode: combatOver ? 'exploration' : 'combat',
+      mode: combatOver ? 'story' : 'combat',
       currentEnemy: combatOver ? undefined : updatedEnemy,
       playerStats: updatedPlayer,
       messages: [...prevState.messages, ...turnMessages]
@@ -78,6 +85,22 @@ const GameContainer: React.FC = () => {
     const newState = processCommand(command, gameState);
     setGameState(newState);
   };
+
+  const handleDecision = (goto: number, choice?: number) => {
+    const state = GAME_STATE.find(s => s.step === goto && (!choice || choice === s.choice));
+    if (!state) return;
+    let enemy: Enemy | null = null;
+    if (state.mode === 'combat') {
+      enemy =  generateEnemyEncounter(enemies, true);
+    }
+    setGameState((prevState) => ({
+      ...prevState,
+      step: state.step,
+      mode: state.mode,
+      currentEnemy: enemy === null ? undefined : enemy,
+      messages: [...prevState.messages, ...state.messages]
+    }));
+  }
 
   const currentLocation = gameState.currentLocation;
 
@@ -111,7 +134,7 @@ const GameContainer: React.FC = () => {
               </Grid>
             )}
             {
-              gameState.mode !== 'combat' && (
+              gameState.mode !== 'combat' && gameState.mode != 'end' && (
                 <Paper sx={{ p: 2, backgroundColor: '#2a2a2a' }}>
                   <Typography variant="h6" color="primary" gutterBottom>
                     Actions
@@ -123,11 +146,26 @@ const GameContainer: React.FC = () => {
                     justifyContent: { xs: 'center', sm: 'flex-start' }
                   }}>
 
-                    <>
-                      <ActionButton variant="outlined" onClick={() => handleAction('forward')}>
-                        Go Forward
-                      </ActionButton>
-                    </>
+                    {
+                      gameState.mode !== 'decision' && (
+                        <>
+                          <ActionButton variant="outlined" onClick={() => handleAction('forward')}>
+                            Go Forward
+                          </ActionButton>
+                        </>
+                      )
+                    }
+
+                    {
+                      gameState.mode === 'decision' && (
+                        gameState.options?.map((option, index) => (
+                          <ActionButton key={index} variant="outlined" onClick={() => handleDecision(option.goto, option.choice)}>
+                            {option.text}
+                          </ActionButton>
+                        )
+                        )
+                      )
+                    }
 
                   </Box>
                 </Paper>

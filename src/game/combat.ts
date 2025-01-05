@@ -81,9 +81,9 @@ export const isCombatOver = (player: PlayerStats, enemy: Enemy): boolean => {
 };
 
 // Generate random enemy encounter based on location
-export const generateEnemyEncounter = (enemies: Enemy[]): Enemy | null => {
+export const generateEnemyEncounter = (enemies: Enemy[], force?: boolean): Enemy | null => {
   // 30% chance of enemy encounter
-  if (Math.random() > 0.3) return null;
+  if (!force && Math.random() > 0.3) return null;
 
   const randomIndex = Math.floor(Math.random() * enemies.length);
   return { ...enemies[randomIndex] }; // Return a copy of the enemy

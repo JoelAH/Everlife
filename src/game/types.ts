@@ -1,4 +1,4 @@
-export type GameMode = 'exploration' | 'combat' | 'story' | 'inventory';
+export type GameMode = 'combat' | 'story' | 'inventory' | 'dialogue' | 'decision' | 'end';
 
 export type ElementType = 'water' | 'earth' | 'wind' | 'fire' | 'misc';
 
@@ -29,16 +29,24 @@ export interface Enemy {
   description: string;
 }
 
+export interface Option {
+  text: string;
+  goto: number;
+  choice?: number;
+}
+
 export interface GameState {
-  step: number;
-  mode: GameMode;
+  step?: number;
+  choice?: number;
   currentLocation: string;
-  playerStats: PlayerStats;
   messages: string[];
   inventory: string[];
   elementalPowers: ElementalPower[];
+  mode: GameMode;
+  playerStats: PlayerStats;
   environmentStatus: number;
   currentEnemy?: Enemy;
+  options?: Option[]
 }
 
 export interface Location {

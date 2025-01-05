@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Typography } from '@mui/material';
-import { ENEMY_APPEARED_MESSAGE } from '../game/states';
+import { ENEMY_APPEARED_MESSAGE, GAME_OVER } from '../game/states';
 
 interface TypeWriterProps {
   text: string;
   delay?: number;
 }
+
+const redMessages: string[] = [GAME_OVER, ENEMY_APPEARED_MESSAGE];
 
 const TypeWriter: React.FC<TypeWriterProps> = ({ text, delay = 50 }) => {
   const [displayText, setDisplayText] = useState('');
@@ -23,7 +25,7 @@ const TypeWriter: React.FC<TypeWriterProps> = ({ text, delay = 50 }) => {
   }, [currentIndex, delay, text]);
 
   return (
-    <Typography sx={{ mb: 1, borderLeft: '3px solid #4CAF50', pl: 2, color: ENEMY_APPEARED_MESSAGE === text ? 'red' : undefined, fontWeight: ENEMY_APPEARED_MESSAGE === text ? 'bold' : undefined }}>
+    <Typography sx={{ mb: 1, borderLeft: '3px solid #4CAF50', pl: 2, color: redMessages.includes(text) ? 'red' : undefined, fontWeight: redMessages.includes(text) ? 'bold' : undefined }}>
       {displayText}
     </Typography>
   );
