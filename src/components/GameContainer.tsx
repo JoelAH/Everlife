@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Box, Paper, Typography, Button, Grid } from '@mui/material';
 import TypeWriter from './TypeWriter';
 import { styled } from '@mui/material/styles';
@@ -52,6 +52,17 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const GameContainer: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GAME_STATE[0]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }
+
+  useEffect(() => {
+      handleScroll();
+    }, [gameState]);
 
   const handleUsePower = (power: ElementalPower) => {
     if (!gameState.currentEnemy || gameState.mode !== 'combat') return;
@@ -70,7 +81,7 @@ const GameContainer: React.FC = () => {
     );
 
     const combatOver = isCombatOver(updatedPlayer, updatedEnemy);
-
+    handleScroll();
     setGameState((prevState) => ({
       ...prevState,
       mode: combatOver ? 'story' : 'combat',
@@ -117,7 +128,7 @@ const GameContainer: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} lg={8}>
-            <MessageBox gameState={gameState}>
+            <MessageBox ref={scrollRef} gameState={gameState}>
               {gameState.messages.map((message, index) => (
                 <TypeWriter key={index} text={message} delay={30} />
               ))}
