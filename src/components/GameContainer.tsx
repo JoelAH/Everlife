@@ -61,8 +61,8 @@ const GameContainer: React.FC = () => {
   }
 
   useEffect(() => {
-      handleScroll();
-    }, [gameState]);
+    handleScroll();
+  }, [gameState]);
 
   const handleUsePower = (power: ElementalPower) => {
     if (!gameState.currentEnemy || gameState.mode !== 'combat') return;
@@ -117,7 +117,7 @@ const GameContainer: React.FC = () => {
     if (!state) return;
     let enemy: Enemy | null = null;
     if (state.mode === 'combat') {
-      enemy =  generateEnemyEncounter(enemies, state.currentEnemyType);
+      enemy = generateEnemyEncounter(enemies, state.currentEnemyType);
     }
     setGameState((prevState) => ({
       ...prevState,
@@ -207,7 +207,6 @@ const GameContainer: React.FC = () => {
               <Typography>Location: {currentLocation}</Typography>
               <Typography>Health: {gameState.playerStats.health}/{gameState.playerStats.maxHealth}</Typography>
               <Typography>Energy: {gameState.playerStats.energy}/{gameState.playerStats.maxEnergy}</Typography>
-              <Typography>Experience: {gameState.playerStats.experience}</Typography>
               <Typography>Earth's Health: {gameState.environmentStatus}%</Typography>
             </Paper>
           </Grid>

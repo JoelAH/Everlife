@@ -1,4 +1,4 @@
-import { Enemy, ElementalPower, PlayerStats, ElementType } from './types';
+import { Enemy, ElementalPower, PlayerStats } from './types';
 
 // Utility function to calculate damage with elemental effectiveness
 export const calculateDamage = (power: ElementalPower, enemy: Enemy): number => {
@@ -86,8 +86,6 @@ export const isCombatOver = (player: PlayerStats, enemy: Enemy): boolean => {
 
 // Generate random enemy encounter based on location
 export const generateEnemyEncounter = (enemies: Enemy[], type?: string): Enemy | null => {
-  // 30% chance of enemy encounter
- // if (!force && Math.random() > 0.3) return null;
   let monsters: Enemy[] = [];
   if (type) {
     monsters = enemies.filter(e => e.type === type);
