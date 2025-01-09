@@ -46,6 +46,7 @@ export interface GameState {
   playerStats: PlayerStats;
   environmentStatus: number;
   currentEnemy?: Enemy;
+  currentEnemyType?: string,
   options?: Option[]
 }
 

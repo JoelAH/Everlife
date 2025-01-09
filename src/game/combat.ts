@@ -1,4 +1,4 @@
-import { Enemy, ElementalPower, PlayerStats } from './types';
+import { Enemy, ElementalPower, PlayerStats, ElementType } from './types';
 
 // Utility function to calculate damage with elemental effectiveness
 export const calculateDamage = (power: ElementalPower, enemy: Enemy): number => {
@@ -17,20 +17,23 @@ export const calculateDamage = (power: ElementalPower, enemy: Enemy): number => 
 export const processCombatTurn = (
   power: ElementalPower,
   player: PlayerStats,
-  enemy: Enemy
+  enemy: Enemy,
+  environmentStatus: number
 ): {
   updatedPlayer: PlayerStats;
   updatedEnemy: Enemy;
   turnMessages: string[];
+  environment: number;
 } => {
   const turnMessages: string[] = [];
   const updatedPlayer = { ...player };
   const updatedEnemy = { ...enemy };
+  let environment = environmentStatus;
 
   // Check if player has enough energy
   if (updatedPlayer.energy < power.energyCost) {
     turnMessages.push("Not enough energy to use this power!");
-    return { updatedPlayer, updatedEnemy, turnMessages };
+    return { updatedPlayer, updatedEnemy, turnMessages, environment };
   }
 
   // Calculate and apply effects
@@ -41,7 +44,8 @@ export const processCombatTurn = (
   if (power.name === "Healing Rain") {
     const healing = 20;
     updatedPlayer.health = Math.min(updatedPlayer.maxHealth, updatedPlayer.health + healing);
-    turnMessages.push(`Healing Rain restores ${healing} HP!`);
+    environment = Math.min(100, environment + 10);
+    turnMessages.push(`Healing Rain restores ${healing} HP! It also restores the environment by 10`);
   } else if (power.name === "Earth Shield") {
     // Reduce incoming damage for this turn
     enemy.attack = Math.floor(enemy.attack * 0.5);
@@ -72,7 +76,7 @@ export const processCombatTurn = (
     updatedPlayer.experience += enemy.experience;
   }
 
-  return { updatedPlayer, updatedEnemy, turnMessages };
+  return { updatedPlayer, updatedEnemy, turnMessages, environment };
 };
 
 // Check if combat should end
@@ -81,10 +85,16 @@ export const isCombatOver = (player: PlayerStats, enemy: Enemy): boolean => {
 };
 
 // Generate random enemy encounter based on location
-export const generateEnemyEncounter = (enemies: Enemy[], force?: boolean): Enemy | null => {
+export const generateEnemyEncounter = (enemies: Enemy[], type?: string): Enemy | null => {
   // 30% chance of enemy encounter
-  if (!force && Math.random() > 0.3) return null;
-
-  const randomIndex = Math.floor(Math.random() * enemies.length);
-  return { ...enemies[randomIndex] }; // Return a copy of the enemy
+ // if (!force && Math.random() > 0.3) return null;
+  let monsters: Enemy[] = [];
+  if (type) {
+    monsters = enemies.filter(e => e.type === type);
+  }
+  if (!monsters.length) {
+    monsters = enemies;
+  }
+  const randomIndex = Math.floor(Math.random() * monsters.length);
+  return { ...monsters[randomIndex] }; // Return a copy of the enemy
 };

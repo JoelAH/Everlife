@@ -67,7 +67,7 @@ const GameContainer: React.FC = () => {
   const handleUsePower = (power: ElementalPower) => {
     if (!gameState.currentEnemy || gameState.mode !== 'combat') return;
 
-    const { updatedPlayer, updatedEnemy, turnMessages } = processCombatTurn(
+    const { updatedPlayer, updatedEnemy, turnMessages, environment } = processCombatTurn(
       power,
       gameState.playerStats || {
         health: 100,
@@ -77,18 +77,33 @@ const GameContainer: React.FC = () => {
         experience: 0,
         harmony: 70
       },
-      gameState.currentEnemy
+      gameState.currentEnemy,
+      gameState.environmentStatus
     );
 
     const combatOver = isCombatOver(updatedPlayer, updatedEnemy);
     handleScroll();
-    setGameState((prevState) => ({
-      ...prevState,
-      mode: combatOver ? 'story' : 'combat',
-      currentEnemy: combatOver ? undefined : updatedEnemy,
-      playerStats: updatedPlayer,
-      messages: [...prevState.messages, ...turnMessages]
-    }));
+    if (updatedPlayer.health <= 0) {
+      const state = GAME_STATE.find(s => s.step === 70);
+      if (state) {
+        setGameState((prevState) => ({
+          ...state,
+          environmentStatus: prevState.environmentStatus,
+          currentEnemy: undefined,
+          playerStats: prevState.playerStats,
+          messages: [...prevState.messages, ...state.messages]
+        }));
+      }
+    } else {
+      setGameState((prevState) => ({
+        ...prevState,
+        environmentStatus: environment ? environment : prevState.environmentStatus,
+        mode: combatOver ? 'story' : 'combat',
+        currentEnemy: combatOver ? undefined : updatedEnemy,
+        playerStats: updatedPlayer,
+        messages: [...prevState.messages, ...turnMessages]
+      }));
+    }
   };
 
   const handleAction = (action: string, target?: string) => {
@@ -102,7 +117,7 @@ const GameContainer: React.FC = () => {
     if (!state) return;
     let enemy: Enemy | null = null;
     if (state.mode === 'combat') {
-      enemy =  generateEnemyEncounter(enemies, true);
+      enemy =  generateEnemyEncounter(enemies, state.currentEnemyType);
     }
     setGameState((prevState) => ({
       ...prevState,
