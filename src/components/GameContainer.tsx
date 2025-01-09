@@ -8,6 +8,7 @@ import { processCommand } from '../game/gameLogic';
 import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game/combat';
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
+import char from '../assets/char.png';
 import { enemies, GAME_STATE } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
@@ -208,6 +209,9 @@ const GameContainer: React.FC = () => {
               <Typography>Health: {gameState.playerStats.health}/{gameState.playerStats.maxHealth}</Typography>
               <Typography>Energy: {gameState.playerStats.energy}/{gameState.playerStats.maxEnergy}</Typography>
               <Typography>Earth's Health: {gameState.environmentStatus}%</Typography>
+            </Paper>
+            <Paper sx={{ p: 2, backgroundColor: '#2a2a2a', color: '#fff' }}>
+              <img src={char} width={'100px'} />
             </Paper>
           </Grid>
         </Grid>
