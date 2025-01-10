@@ -24,11 +24,11 @@ export class CdkStack extends cdk.Stack {
         },
       },
       passwordPolicy: {
-        minLength: 8,
-        requireLowercase: true,
-        requireUppercase: true,
-        requireDigits: true,
-        requireSymbols: true,
+        minLength: 6
+      },
+      autoVerify: { email: true }, // Automatically verify the email
+      userVerification: {
+        emailStyle: undefined // No email verification required
       },
     });
 
@@ -53,14 +53,44 @@ export class CdkStack extends cdk.Stack {
     // Grant Cognito permissions to Lambda
     loginFunction.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth'],
+        actions: ['cognito-idp:SignUp', 'cognito-idp:InitiateAuth', 'cognito-idp:AdminConfirmSignUp'],
         resources: [userPool.userPoolArn],
       })
     );
 
     // Create API Gateway
-    const api = new apigateway.RestApi(this, 'LoginApi', {
-      restApiName: 'Login Service',
+    const api = new apigateway.RestApi(this, 'EverlifeApi', {
+      restApiName: 'Everlife Service',
+      deploy: false
+    });
+
+    const deployment = new apigateway.Deployment(this, 'ApiDeployment', {
+      api,
+    });
+
+    api.deploymentStage = new apigateway.Stage(this, 'ProdStage', {
+      deployment,
+      stageName: 'prod',
+    });
+
+    // Create a Request Model for validation
+    const requestModel = api.addModel('LoginRequestModel', {
+      contentType: 'application/json',
+      modelName: 'LoginRequestModel',
+      schema: {
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          email: { type: apigateway.JsonSchemaType.STRING },
+          password: { type: apigateway.JsonSchemaType.STRING },
+        },
+        required: ['email', 'password'], // Ensure both fields are required
+      },
+    });
+
+    // Add request validator
+    const validator = new apigateway.RequestValidator(this, 'RequestValidator', {
+      restApi: api,
+      validateRequestBody: true,
     });
 
     // Create API Gateway endpoint
@@ -69,7 +99,13 @@ export class CdkStack extends cdk.Stack {
       'POST',
       new apigateway.LambdaIntegration(loginFunction, {
         proxy: true,
-      })
+      }),
+      {
+        requestValidator: validator,
+        requestModels: {
+          'application/json': requestModel,
+        }
+      }
     );
 
     // Output the API URL

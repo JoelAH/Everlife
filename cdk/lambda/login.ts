@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, AdminConfirmSignUpCommand } from '@aws-sdk/client-cognito-identity-provider';
 
 const cognitoClient = new CognitoIdentityProviderClient({});
 
@@ -33,7 +33,17 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
               Name: 'email',
               Value: email,
             },
+            {
+                Name: 'email_verified',
+                Value: 'true'
+            }
           ],
+        })
+      );
+      await cognitoClient.send(
+        new AdminConfirmSignUpCommand({
+          UserPoolId: process.env.USER_POOL_ID,
+          Username: email,
         })
       );
     } catch (error: any) {
