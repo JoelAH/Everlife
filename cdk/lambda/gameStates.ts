@@ -1,4 +1,5 @@
-[{
+export const GAME_STATES = [
+    {
     "step": 1,
     "mode": "story",
     "messages": [

@@ -42,24 +42,41 @@ export class CdkStack extends cdk.Stack {
     });
 
     // Create SSM Parameters for game data
-    const enemiesJson = fs.readFileSync(join(__dirname, '../states/enemies.json'), 'utf-8');
-    const powersJson = fs.readFileSync(join(__dirname, '../states/powers.json'), 'utf-8');
-    const gameStateJson = fs.readFileSync(join(__dirname, '../states/state.json'), 'utf-8');
+    const enemiesJson = fs.readFileSync(join(__dirname, '../lib/states/enemies.json'), 'utf-8');
+    const powersJson = fs.readFileSync(join(__dirname, '../lib/states/powers.json'), 'utf-8');
+    const gameStateJson = fs.readFileSync(join(__dirname, '../lib/states/state.json'), 'utf-8');
 
-    new ssm.StringParameter(this, 'EnemiesParameter', {
-      parameterName: '/everlife/enemies',
-      stringValue: enemiesJson,
-    });
+    if (enemiesJson) {
+      const enemiesObj = JSON.parse(enemiesJson);
+      const fire = JSON.stringify(enemiesObj.filter((e: any) => e.type === 'fire'));
+      const pollution = JSON.stringify(enemiesObj.filter((e: any) => e.type === 'pollution'));
+      const corruption = JSON.stringify(enemiesObj.filter((e: any) => e.type === 'corruption'));
+      const machine = JSON.stringify(enemiesObj.filter((e: any) => e.type === 'machine'));
 
-    new ssm.StringParameter(this, 'PowersParameter', {
-      parameterName: '/everlife/powers',
-      stringValue: powersJson,
-    });
+      new ssm.StringParameter(this, 'EnemiesParameterFire', {
+        parameterName: '/everlife/enemies/fire',
+        stringValue: fire,
+      });
+      new ssm.StringParameter(this, 'EnemiesParameterPollution', {
+        parameterName: '/everlife/enemies/pollution',
+        stringValue: pollution,
+      });
+      new ssm.StringParameter(this, 'EnemiesParameterCorruption', {
+        parameterName: '/everlife/enemies/corruption',
+        stringValue: corruption,
+      });
+      new ssm.StringParameter(this, 'EnemiesParameterMachine', {
+        parameterName: '/everlife/enemies/machine',
+        stringValue: machine,
+      });
+    }
 
-    new ssm.StringParameter(this, 'GameStateParameter', {
-      parameterName: '/everlife/gamestate',
-      stringValue: gameStateJson,
-    });
+    if (powersJson) {
+      new ssm.StringParameter(this, 'PowersParameter', {
+        parameterName: '/everlife/powers',
+        stringValue: powersJson,
+      });
+    }
 
     // Create Lambda function
     const loginFunction = new NodejsFunction(this, 'LoginFunction', {
@@ -80,15 +97,22 @@ export class CdkStack extends cdk.Stack {
       })
     );
 
-    // Grant Lambda permissions to read SSM parameters
-    // loginFunction.addToRolePolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ['ssm:GetParameter'],
-    //     resources: [
-    //       `arn:aws:ssm:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:parameter/everlife/*`
-    //     ],
-    //   })
-    // );
+    // Create States Lambda function
+    const statesFunction = new NodejsFunction(this, 'StatesFunction', {
+      entry: join(__dirname, '../lambda/states.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_18_X,
+    });
+
+    // Grant SSM read permissions to States Lambda
+    statesFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['ssm:GetParameters'],
+        resources: [
+          `arn:aws:ssm:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:parameter/everlife/*`
+        ],
+      })
+    );
 
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
@@ -130,7 +154,11 @@ export class CdkStack extends cdk.Stack {
       validateRequestBody: true,
     });
 
-    // Create API Gateway endpoint
+    // Create API Gateway endpoints
+    const states = api.root.addResource('states');
+    states.addMethod('GET', new apigateway.LambdaIntegration(statesFunction));
+
+    // Create login endpoint
     const login = api.root.addResource('login');
     login.addMethod(
       'POST',

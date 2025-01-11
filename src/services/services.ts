@@ -1,4 +1,4 @@
-const API_URL = 'https://9ew8k1sgr4.execute-api.us-east-1.amazonaws.com/prod';
+const API_URL = 'https://ogerpowvy5.execute-api.us-east-1.amazonaws.com/prod';
 
 export const loginUser = async ({ email, password }: { email: string, password: string }) => {
     let success = false;
