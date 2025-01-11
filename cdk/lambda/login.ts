@@ -32,10 +32,6 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
             {
               Name: 'email',
               Value: email,
-            },
-            {
-                Name: 'email_verified',
-                Value: 'true'
             }
           ],
         })
@@ -66,6 +62,10 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*', // CORS header
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
       body: JSON.stringify({
         token: authResponse.AuthenticationResult?.IdToken,
         refreshToken: authResponse.AuthenticationResult?.RefreshToken,
@@ -75,6 +75,10 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
     console.error('Error:', error);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*', // CORS header
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
       body: JSON.stringify({ message: 'Internal server error' }),
     };
   }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Paper, Typography, Button, Grid } from '@mui/material';
+import { Box, Paper, Typography, Button, Grid, TextField } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import TypeWriter from './TypeWriter';
 import { styled } from '@mui/material/styles';
 import { BoxOwnProps } from '@mui/system';
@@ -10,6 +11,7 @@ import CombatView from './CombatView';
 import logo from '../assets/logo.png'
 import char from '../assets/char.png';
 import { enemies, GAME_STATE } from '../game/states';
+import { loginUser } from '../services/services';
 
 interface MessageBoxProps extends BoxOwnProps {
   gameState?: GameState;
@@ -53,6 +55,11 @@ const ActionButton = styled(Button)(({ theme }) => ({
 
 const GameContainer: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GAME_STATE[0]);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [token, setToken] = useState<string>(localStorage.getItem('token') || '');
+  const [savedEmail, setSavedEmail] = useState<string>(localStorage.getItem('savedEmail') || '');
+  const [loading, setLoading] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
@@ -213,6 +220,54 @@ const GameContainer: React.FC = () => {
             <Paper sx={{ p: 2, backgroundColor: '#2a2a2a', color: '#fff' }}>
               <img src={char} width={'100px'} />
             </Paper>
+            {
+              !!token ? (
+                <div>Signed in as {savedEmail}</div>
+              ) : (
+                <Paper sx={{ p: 2, backgroundColor: '#2a2a2a', color: '#fff' }}>
+                  <Typography sx={{ color: 'green' }}>Sign Up/In to save progress</Typography>
+                  <div>
+                    <TextField
+                      id="email"
+                      type='email'
+                      label="Email"
+                      variant="filled"
+                      sx={{ width: '100%' }}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)} />
+                    <TextField
+                      id="password"
+                      type='password'
+                      label="Password"
+                      variant="filled"
+                      sx={{ width: '100%' }}
+                      placeholder='max 6 characters'
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)} />
+                    <LoadingButton 
+                      loading={loading}  
+                      variant="contained" 
+                      onClick={() => {
+                        setLoading(true);
+                        loginUser({ email, password })
+                        .then((success) => {
+                          if (success) {
+                            setToken(localStorage.getItem('token') || '');
+                            setSavedEmail(localStorage.getItem('savedEmail') || '');
+                          }
+                          setLoading(false);
+                        })
+                        .catch((e) => {
+                          setLoading(false);
+                          alert('Something went wrong trying to login')
+                        }) ;
+                    }}>
+                      Continue
+                    </LoadingButton>
+                  </div>
+                </Paper>
+              )
+            }
           </Grid>
         </Grid>
       </StyledPaper>

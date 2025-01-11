@@ -61,7 +61,12 @@ export class CdkStack extends cdk.Stack {
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
       restApiName: 'Everlife Service',
-      deploy: false
+      deploy: false,
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS, // Allow all origins
+        allowMethods: apigateway.Cors.ALL_METHODS, // Allow all HTTP methods
+        allowHeaders: ['Authorization', 'Content-Type'],
+      }
     });
 
     const deployment = new apigateway.Deployment(this, 'ApiDeployment', {
@@ -98,13 +103,22 @@ export class CdkStack extends cdk.Stack {
     login.addMethod(
       'POST',
       new apigateway.LambdaIntegration(loginFunction, {
-        proxy: true,
+        proxy: true
       }),
       {
         requestValidator: validator,
         requestModels: {
           'application/json': requestModel,
-        }
+        },
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Origin': true,
+              'method.response.header.Access-Control-Allow-Headers': true,
+            },
+          },
+        ]
       }
     );
 
