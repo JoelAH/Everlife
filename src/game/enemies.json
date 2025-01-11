@@ -1,0 +1,155 @@
+[
+    {
+        "name": "Blaze Reactor",
+        "health": 50,
+        "maxHealth": 50,
+        "attack": 14,
+        "experience": 35,
+        "type": "fire",
+        "description": "A malfunctioning reactor core that spreads uncontrolled flames"
+    },
+    {
+        "name": "Plasma Specter",
+        "health": 45,
+        "maxHealth": 45,
+        "attack": 20,
+        "experience": 30,
+        "type": "fire",
+        "description": "An unstable mass of superheated industrial waste"
+    },
+    {
+        "name": "Furnace Demon",
+        "health": 70,
+        "maxHealth": 70,
+        "attack": 16,
+        "experience": 35,
+        "type": "fire",
+        "description": "A malevolent spirit born in abandoned factory furnaces"
+    },
+    {
+        "name": "Oil Fire Demon",
+        "health": 40,
+        "maxHealth": 40,
+        "attack": 18,
+        "experience": 40,
+        "type": "fire",
+        "description": "A creature of burning petroleum that ignites everything it touches"
+    },
+    {
+        "name": "Smoke Wraith",
+        "health": 50,
+        "maxHealth": 50,
+        "attack": 8,
+        "experience": 20,
+        "type": "pollution",
+        "description": "A malevolent entity born from toxic emissions"
+    },
+    {
+        "name": "Smog Beast",
+        "health": 60,
+        "maxHealth": 60,
+        "attack": 13,
+        "experience": 30,
+        "type": "pollution",
+        "description": "A massive creature formed from concentrated air pollution"
+    },
+    {
+        "name": "Toxic Sludge Horror",
+        "health": 50,
+        "maxHealth": 50,
+        "attack": 14,
+        "experience": 40,
+        "type": "pollution",
+        "description": "An amorphous mass of living chemical waste"
+    },
+    {
+        "name": "Acid Rain Specter",
+        "health": 45,
+        "maxHealth": 45,
+        "attack": 12,
+        "experience": 25,
+        "type": "corruption",
+        "description": "Corrupted water spirit spreading pollution"
+    },
+    {
+        "name": "Tainted Earth Spirit",
+        "health": 50,
+        "maxHealth": 50,
+        "attack": 10,
+        "experience": 25,
+        "type": "corruption",
+        "description": "A soil spirit twisted by chemical contamination"
+    },
+    {
+        "name": "Toxic Wind Wisp",
+        "health": 40,
+        "maxHealth": 40,
+        "attack": 14,
+        "experience": 25,
+        "type": "corruption",
+        "description": "Once-pure air spirit now spreading noxious fumes"
+    },
+    {
+        "name": "Plague Tree Ent",
+        "health": 55,
+        "maxHealth": 55,
+        "attack": 11,
+        "experience": 30,
+        "type": "corruption",
+        "description": "A forest guardian warped by industrial waste"
+    },
+    {
+        "name": "Corrupted Frost Wraith",
+        "health": 42,
+        "maxHealth": 42,
+        "attack": 13,
+        "experience": 25,
+        "type": "corruption",
+        "description": "An ice spirit tainted by chemical runoff"
+    },
+    {
+        "name": "Sludge River Nymph",
+        "health": 48,
+        "maxHealth": 48,
+        "attack": 11,
+        "experience": 25,
+        "type": "corruption",
+        "description": "A river spirit transformed by industrial dumping"
+    },
+    {
+        "name": "Industrial Golem",
+        "health": 60,
+        "maxHealth": 60,
+        "attack": 15,
+        "experience": 35,
+        "type": "machine",
+        "description": "A construct of industrial waste and machinery"
+    },
+    {
+        "name": "Rogue Harvester",
+        "health": 60,
+        "maxHealth": 60,
+        "attack": 15,
+        "experience": 45,
+        "type": "machine",
+        "description": "An automated harvesting machine that now hunts organic life"
+    },
+    {
+        "name": "Nano Swarm",
+        "health": 40,
+        "maxHealth": 40,
+        "attack": 22,
+        "experience": 35,
+        "type": "machine",
+        "description": "A cloud of malfunctioning nanobots that devour everything in their path"
+    },
+    {
+        "name": "Circuit Phantom",
+        "health": 40,
+        "maxHealth": 40,
+        "attack": 17,
+        "experience": 40,
+        "type": "machine",
+        "description": "An electrical entity that possesses and weaponizes machinery"
+    }
+]

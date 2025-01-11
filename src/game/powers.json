@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Water Blast",
+        "element": "water",
+        "damage": 15,
+        "energyCost": 20,
+        "description": "A concentrated blast of purifying water"
+    },
+    {
+        "name": "Earth Shield",
+        "element": "earth",
+        "damage": 0,
+        "energyCost": 15,
+        "description": "Defensive barrier made of natural elements"
+    },
+    {
+        "name": "Healing Rain",
+        "element": "water",
+        "damage": 0,
+        "energyCost": 15,
+        "description": "Rejuvenating rain that restores the land"
+    },
+    {
+        "name": "Nature's Wrath",
+        "element": "earth",
+        "damage": 30,
+        "energyCost": 30,
+        "description": "Channel the anger of the wounded Earth"
+    },
+    {
+        "name": "Re-energize",
+        "element": "misc",
+        "damage": 0,
+        "energyCost": 0,
+        "description": "Call upon the elemental spirits for energy."
+    }
+]
