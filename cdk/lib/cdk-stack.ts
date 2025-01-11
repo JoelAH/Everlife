@@ -3,8 +3,10 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { join } from 'path';
+import * as fs from 'fs';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -39,6 +41,26 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
+    // Create SSM Parameters for game data
+    const enemiesJson = fs.readFileSync(join(__dirname, '../states/enemies.json'), 'utf-8');
+    const powersJson = fs.readFileSync(join(__dirname, '../states/powers.json'), 'utf-8');
+    const gameStateJson = fs.readFileSync(join(__dirname, '../states/state.json'), 'utf-8');
+
+    new ssm.StringParameter(this, 'EnemiesParameter', {
+      parameterName: '/everlife/enemies',
+      stringValue: enemiesJson,
+    });
+
+    new ssm.StringParameter(this, 'PowersParameter', {
+      parameterName: '/everlife/powers',
+      stringValue: powersJson,
+    });
+
+    new ssm.StringParameter(this, 'GameStateParameter', {
+      parameterName: '/everlife/gamestate',
+      stringValue: gameStateJson,
+    });
+
     // Create Lambda function
     const loginFunction = new NodejsFunction(this, 'LoginFunction', {
       entry: join(__dirname, '../lambda/login.ts'),
@@ -57,6 +79,16 @@ export class CdkStack extends cdk.Stack {
         resources: [userPool.userPoolArn],
       })
     );
+
+    // Grant Lambda permissions to read SSM parameters
+    // loginFunction.addToRolePolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ['ssm:GetParameter'],
+    //     resources: [
+    //       `arn:aws:ssm:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:parameter/everlife/*`
+    //     ],
+    //   })
+    // );
 
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
