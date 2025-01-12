@@ -10,7 +10,7 @@ import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
 import char from '../assets/char.png';
-import { getSavedState, getStates, loginUser } from '../services/services';
+import { getSavedState, getStates, loginUser, savedData } from '../services/services';
 import { defaultPlayerStats } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
@@ -176,6 +176,7 @@ const GameContainer: React.FC = () => {
     const command = target ? `${action} ${target}` : action;
     const newState = processCommand(command, gameState, gameStates, enemies);
     setGameState(newState);
+    savedData(newState, gameStates);
   };
 
   const handleDecision = (goto: number, choice?: number) => {
