@@ -28,8 +28,12 @@ export async function handler(event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
         if (!result.Item) {
             return {
-                statusCode: 404,
-                body: JSON.stringify({ message: 'No saved state found for user' })
+                statusCode: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': true,
+                },
+                body: JSON.stringify(null)
             };
         }
 

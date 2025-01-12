@@ -10,7 +10,7 @@ import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
 import char from '../assets/char.png';
-import { getStates, loginUser } from '../services/services';
+import { getSavedState, getStates, loginUser } from '../services/services';
 import { defaultPlayerStats } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
@@ -58,15 +58,15 @@ let gameStates: GameState[] = [];
 
 const GameContainer: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
-      "step": 1,
-      "mode": "story",
-      "messages": [],
-      "currentLocation": "Scorched Plains Entry",
-      "playerStats": defaultPlayerStats,
-      "inventory": [],
-      "elementalPowers": [],
-      "environmentStatus": 50,
-      "currentEnemy": undefined
+    "step": 1,
+    "mode": "story",
+    "messages": [],
+    "currentLocation": "Scorched Plains Entry",
+    "playerStats": defaultPlayerStats,
+    "inventory": [],
+    "elementalPowers": [],
+    "environmentStatus": 50,
+    "currentEnemy": undefined
   });
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -102,10 +102,23 @@ const GameContainer: React.FC = () => {
             )
           }
         }
-        if (enemies?.length && gameStates?.length) {
-          setGameState(gameStates[0]);
-          setGameInit(true);
-        }
+
+        getSavedState()
+          .then((data) => {
+            if (data) {
+              setGameState(JSON.parse(data) as GameState);
+              setGameInit(true);
+            } else if (enemies?.length && gameStates?.length) {
+              setGameState(gameStates[0]);
+              setGameInit(true);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            alert('Error loading saved state');
+          });
+
+
       })
       .catch((err) => {
         console.log(err);

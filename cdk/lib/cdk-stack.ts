@@ -43,9 +43,32 @@ export class CdkStack extends cdk.Stack {
     // Create Cognito Client
     const client = userPool.addClient('everlife-client', {
       authFlows: {
+        adminUserPassword: true,
         userPassword: true,
+        custom: true,
+        userSrp: true,
+      },
+      refreshTokenValidity: cdk.Duration.days(30),
+      accessTokenValidity: cdk.Duration.minutes(60),
+      idTokenValidity: cdk.Duration.minutes(60),
+    });
+
+    // Create Lambda function for token refresh
+    const refreshTokenFunction = new NodejsFunction(this, 'RefreshTokenFunction', {
+      runtime: lambda.Runtime.NODEJS_18_X,
+      handler: 'handler',
+      entry: join(__dirname, '../lambda/refresh-token.ts'),
+      environment: {
+        CLIENT_ID: client.userPoolClientId,
       },
     });
+
+    // Grant Cognito permissions to the refresh token Lambda
+    refreshTokenFunction.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['cognito-idp:InitiateAuth'],
+      resources: [userPool.userPoolArn],
+    }));
 
     /** SSM */
     // Create SSM Parameters for game data
@@ -161,6 +184,10 @@ export class CdkStack extends cdk.Stack {
         allowHeaders: ['Authorization', 'Content-Type'],
       }
     });
+
+    // Add refresh token endpoint
+    const refreshTokenIntegration = new apigateway.LambdaIntegration(refreshTokenFunction);
+    api.root.addResource('refresh-token').addMethod('POST', refreshTokenIntegration);
 
     // Create Cognito Authorizer
     const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
