@@ -13,6 +13,7 @@ export const loginUser = async ({ email, password }: { email: string, password: 
         const data = await res.json();
         if (data?.token) {
             localStorage.setItem('token', data.token);
+            localStorage.setItem('refresh', data.refreshToken);
             localStorage.setItem('savedEmail', email);
             success = true;
         }
@@ -27,6 +28,29 @@ export const getStates = async () => {
     try {
         const res = await fetch(`${API_URL}/states`);
         return await res.json();
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
+export const getSavedState = async () => {
+    try {
+        const res = await fetch(`${API_URL}/get-state`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            }
+        });
+        if (res.status === 401) {
+            // renew token
+            //try again
+            const res = await fetch(`${API_URL}/get-state`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                }
+            });
+            return await res.json();
+        }
     }
     catch (err) {
         console.log(err);
