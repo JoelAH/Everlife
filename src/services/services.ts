@@ -23,3 +23,12 @@ export const loginUser = async ({ email, password }: { email: string, password: 
     }
     return success;
 }
+export const getStates = async () => {
+    try {
+        const res = await fetch(`${API_URL}/states`);
+        return await res.json();
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
