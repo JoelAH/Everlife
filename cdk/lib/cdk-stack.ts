@@ -7,7 +7,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { join } from 'path';
 import * as fs from 'fs';
-import { createGameStateTable } from './game-state';
+import { createGameStateTable, createSavedStateTable } from './game-state';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -15,10 +15,11 @@ export class CdkStack extends cdk.Stack {
 
     // Create DynamoDB table for game state
     const gameStateTable = createGameStateTable(this);
+    const savedStateTable = createSavedStateTable(this);
 
     /** COGNITO */
     // Create Cognito User Pool
-    const userPool = new cognito.UserPool(this, 'UserPool', {
+    const userPool = new cognito.UserPool(this, 'EverPool', {
       userPoolName: 'everlife-pool',
       selfSignUpEnabled: true,
       signInAliases: {
@@ -122,6 +123,21 @@ export class CdkStack extends cdk.Stack {
     // Grant DynamoDB read permissions
     gameStateTable.grantReadData(statesFunction);
 
+    // Create save-state Lambda function
+    const saveStateFunction = new NodejsFunction(this, 'SaveStateFunction', {
+      entry: join(__dirname, '../lambda/save-state.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      environment: {
+        USER_POOL_ID: userPool.userPoolId,
+        CLIENT_ID: client.userPoolClientId,
+        TABLE_NAME: savedStateTable.tableName,
+      },
+    });
+
+    // Grant DynamoDB write permissions
+    savedStateTable.grantWriteData(saveStateFunction);
+
     /** API GATEWAY */
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
@@ -141,6 +157,18 @@ export class CdkStack extends cdk.Stack {
     api.deploymentStage = new apigateway.Stage(this, 'ProdStage', {
       deployment,
       stageName: 'prod',
+    });
+
+    // Create Cognito Authorizer
+    const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
+      cognitoUserPools: [userPool],
+    });
+
+    // Add save-state endpoint
+    const saveState = api.root.addResource('save-state');
+    saveState.addMethod('POST', new apigateway.LambdaIntegration(saveStateFunction), {
+      authorizer: authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
     });
 
     // Create a Request Model for validation

@@ -13,3 +13,15 @@ export function createGameStateTable(stack: any) {
 
   return gameStateTable;
 }
+
+export function createSavedStateTable(stack: any) {
+  // Create DynamoDB table for game state
+  const savedStateTable = new dynamodb.Table(stack, 'SavedStateTable', {
+    tableName: 'savedstate',
+    partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+    removalPolicy: RemovalPolicy.DESTROY, // For development - change for production
+    billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+  });
+
+  return savedStateTable;
+}
