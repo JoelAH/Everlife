@@ -164,13 +164,6 @@ export class CdkStack extends cdk.Stack {
       cognitoUserPools: [userPool],
     });
 
-    // Add save-state endpoint
-    const saveState = api.root.addResource('save-state');
-    saveState.addMethod('POST', new apigateway.LambdaIntegration(saveStateFunction), {
-      authorizer: authorizer,
-      authorizationType: apigateway.AuthorizationType.COGNITO,
-    });
-
     // Create a Request Model for validation
     const requestModel = api.addModel('LoginRequestModel', {
       contentType: 'application/json',
@@ -185,10 +178,24 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
-    // Add request validator
-    const validator = new apigateway.RequestValidator(this, 'RequestValidator', {
-      restApi: api,
-      validateRequestBody: true,
+    const saveStateModel = api.addModel('SaveStateRequestModel', {
+      contentType: 'application/json',
+      modelName: 'SaveStateRequestModel',
+      schema: {
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          step: { type: apigateway.JsonSchemaType.NUMBER },
+          mode: { type: apigateway.JsonSchemaType.STRING },
+          messages: { type: apigateway.JsonSchemaType.ARRAY },
+          currentLocation: { type: apigateway.JsonSchemaType.STRING },
+          playerStats: { type: apigateway.JsonSchemaType.OBJECT },
+          inventory: { type: apigateway.JsonSchemaType.ARRAY },
+          elementalPowers: { type: apigateway.JsonSchemaType.ARRAY },
+          environmentStatus: { type: apigateway.JsonSchemaType.NUMBER },
+          currentEnemy: { type: apigateway.JsonSchemaType.OBJECT }
+        },
+        required: ['step', 'mode', 'playerStats'], // Ensure both fields are required
+      },
     });
 
     // Create API Gateway endpoints
@@ -196,6 +203,11 @@ export class CdkStack extends cdk.Stack {
     states.addMethod('GET', new apigateway.LambdaIntegration(statesFunction));
 
     // Create login endpoint
+    // Add request validator
+    const validator = new apigateway.RequestValidator(this, 'RequestValidator', {
+      restApi: api,
+      validateRequestBody: true,
+    });
     const login = api.root.addResource('login');
     login.addMethod(
       'POST',
@@ -218,6 +230,35 @@ export class CdkStack extends cdk.Stack {
         ]
       }
     );
+
+    // Add save-state endpoint
+    const savedStateValidator = new apigateway.RequestValidator(this, 'SavedStateValidator', {
+      restApi: api,
+      requestValidatorName: 'SavedStateBodyValidator',
+      validateRequestBody: true,
+    });
+    const saveState = api.root.addResource('save-state');
+    saveState.addMethod('POST',
+      new apigateway.LambdaIntegration(saveStateFunction, {
+        proxy: true
+      }),
+      {
+        authorizer: authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+        requestValidator: savedStateValidator,
+        requestModels: {
+          'application/json': saveStateModel,
+        },
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseParameters: {
+              'method.response.header.Access-Control-Allow-Origin': true,
+              'method.response.header.Access-Control-Allow-Headers': true,
+            },
+          },
+        ]
+      });
 
     // Output the API URL
     new cdk.CfnOutput(this, 'ApiUrl', {
