@@ -10,8 +10,8 @@ import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
 import char from '../assets/char.png';
-import { enemies, GAME_STATE } from '../game/states';
-import { loginUser } from '../services/services';
+import { getStates, loginUser } from '../services/services';
+import { defaultPlayerStats } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
   gameState?: GameState;
@@ -53,13 +53,27 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+let enemies: Enemy[] = [];
+let gameStates: GameState[] = [];
+
 const GameContainer: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>(GAME_STATE[0]);
+  const [gameState, setGameState] = useState<GameState>({
+      "step": 1,
+      "mode": "story",
+      "messages": [],
+      "currentLocation": "Scorched Plains Entry",
+      "playerStats": defaultPlayerStats,
+      "inventory": [],
+      "elementalPowers": [],
+      "environmentStatus": 50,
+      "currentEnemy": undefined
+  });
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [token, setToken] = useState<string>(localStorage.getItem('token') || '');
   const [savedEmail, setSavedEmail] = useState<string>(localStorage.getItem('savedEmail') || '');
   const [loading, setLoading] = useState<boolean>(false);
+  const [gameInit, setGameInit] = useState<boolean>(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = () => {
@@ -67,6 +81,37 @@ const GameContainer: React.FC = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }
+
+  useEffect(() => {
+    getStates()
+      .then((data) => {
+        enemies = data.enemies;
+        if (data.gameStates?.length) {
+          for (const state of data.gameStates) {
+            gameStates.push(
+              {
+                ...state,
+                messages: JSON.parse(state.messages as string),
+                options: state.options ? JSON.parse(state.options as string) : undefined,
+                playerStats: defaultPlayerStats,
+                environmentStatus: 50,
+                currentEnemy: undefined,
+                inventory: [],
+                elementalPowers: data.powers
+              }
+            )
+          }
+        }
+        if (enemies?.length && gameStates?.length) {
+          setGameState(gameStates[0]);
+          setGameInit(true);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        alert('Error loading game state');
+      });
+  }, []);
 
   useEffect(() => {
     handleScroll();
@@ -92,7 +137,7 @@ const GameContainer: React.FC = () => {
     const combatOver = isCombatOver(updatedPlayer, updatedEnemy);
     handleScroll();
     if (updatedPlayer.health <= 0) {
-      const state = GAME_STATE.find(s => s.step === 70);
+      const state = gameStates.find(s => s.step === 70);
       if (state) {
         setGameState((prevState) => ({
           ...state,
@@ -116,12 +161,12 @@ const GameContainer: React.FC = () => {
 
   const handleAction = (action: string, target?: string) => {
     const command = target ? `${action} ${target}` : action;
-    const newState = processCommand(command, gameState);
+    const newState = processCommand(command, gameState, gameStates, enemies);
     setGameState(newState);
   };
 
   const handleDecision = (goto: number, choice?: number) => {
-    const state = GAME_STATE.find(s => s.step === goto && (!choice || choice === s.choice));
+    const state = gameStates.find(s => s.step === goto && (!choice || choice === s.choice));
     if (!state) return;
     let enemy: Enemy | null = null;
     if (state.mode === 'combat') {
@@ -151,6 +196,11 @@ const GameContainer: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} lg={8}>
+            {
+              !gameInit && (
+                <div>Loading game...</div>
+              )
+            }
             <MessageBox ref={scrollRef} gameState={gameState}>
               {gameState.messages.map((message, index) => (
                 <TypeWriter key={index} text={message} delay={30} />
@@ -181,7 +231,7 @@ const GameContainer: React.FC = () => {
                   }}>
 
                     {
-                      gameState.mode !== 'decision' && (
+                      gameState.mode !== 'decision' && gameInit && (
                         <>
                           <ActionButton variant="outlined" onClick={() => handleAction('forward')}>
                             Go Forward
@@ -244,24 +294,24 @@ const GameContainer: React.FC = () => {
                       placeholder='max 6 characters'
                       value={password}
                       onChange={(e) => setPassword(e.target.value)} />
-                    <LoadingButton 
-                      loading={loading}  
-                      variant="contained" 
+                    <LoadingButton
+                      loading={loading}
+                      variant="contained"
                       onClick={() => {
                         setLoading(true);
                         loginUser({ email, password })
-                        .then((success) => {
-                          if (success) {
-                            setToken(localStorage.getItem('token') || '');
-                            setSavedEmail(localStorage.getItem('savedEmail') || '');
-                          }
-                          setLoading(false);
-                        })
-                        .catch((e) => {
-                          setLoading(false);
-                          alert('Something went wrong trying to login')
-                        }) ;
-                    }}>
+                          .then((success) => {
+                            if (success) {
+                              setToken(localStorage.getItem('token') || '');
+                              setSavedEmail(localStorage.getItem('savedEmail') || '');
+                            }
+                            setLoading(false);
+                          })
+                          .catch((e) => {
+                            setLoading(false);
+                            alert('Something went wrong trying to login')
+                          });
+                      }}>
                       Continue
                     </LoadingButton>
                   </div>
