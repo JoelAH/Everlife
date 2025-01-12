@@ -123,6 +123,19 @@ export class CdkStack extends cdk.Stack {
     // Grant DynamoDB read permissions
     gameStateTable.grantReadData(statesFunction);
 
+    // Create get-state Lambda function
+    const getStateFunction = new NodejsFunction(this, 'GetStateFunction', {
+      entry: join(__dirname, '../lambda/get-state.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_18_X,
+      environment: {
+        SAVED_STATE_TABLE_NAME: savedStateTable.tableName,
+      },
+    });
+
+    // Grant DynamoDB read permissions to get-state Lambda
+    savedStateTable.grantReadData(getStateFunction);
+
     // Create save-state Lambda function
     const saveStateFunction = new NodejsFunction(this, 'SaveStateFunction', {
       entry: join(__dirname, '../lambda/save-state.ts'),
@@ -142,7 +155,6 @@ export class CdkStack extends cdk.Stack {
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
       restApiName: 'Everlife Service',
-      deploy: false,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS, // Allow all origins
         allowMethods: apigateway.Cors.ALL_METHODS, // Allow all HTTP methods
@@ -150,19 +162,17 @@ export class CdkStack extends cdk.Stack {
       }
     });
 
-    const deployment = new apigateway.Deployment(this, 'ApiDeployment', {
-      api,
-    });
-
-    api.deploymentStage = new apigateway.Stage(this, 'ProdStage', {
-      deployment,
-      stageName: 'prod',
-    });
-
     // Create Cognito Authorizer
     const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
     });
+
+    // GET /get-state endpoint
+    api.root.addResource('get-state')
+      .addMethod('GET', new apigateway.LambdaIntegration(getStateFunction), {
+        authorizer: authorizer,
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+      });
 
     // Create a Request Model for validation
     const requestModel = api.addModel('LoginRequestModel', {
