@@ -7,11 +7,16 @@ import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { join } from 'path';
 import * as fs from 'fs';
+import { createGameStateTable } from './game-state';
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Create DynamoDB table for game state
+    const gameStateTable = createGameStateTable(this);
+
+    /** COGNITO */
     // Create Cognito User Pool
     const userPool = new cognito.UserPool(this, 'UserPool', {
       userPoolName: 'everlife-pool',
@@ -41,10 +46,10 @@ export class CdkStack extends cdk.Stack {
       },
     });
 
+    /** SSM */
     // Create SSM Parameters for game data
     const enemiesJson = fs.readFileSync(join(__dirname, '../lib/states/enemies.json'), 'utf-8');
     const powersJson = fs.readFileSync(join(__dirname, '../lib/states/powers.json'), 'utf-8');
-    const gameStateJson = fs.readFileSync(join(__dirname, '../lib/states/state.json'), 'utf-8');
 
     if (enemiesJson) {
       const enemiesObj = JSON.parse(enemiesJson);
@@ -78,6 +83,7 @@ export class CdkStack extends cdk.Stack {
       });
     }
 
+    /** LAMBDA */
     // Create Lambda function
     const loginFunction = new NodejsFunction(this, 'LoginFunction', {
       entry: join(__dirname, '../lambda/login.ts'),
@@ -113,7 +119,10 @@ export class CdkStack extends cdk.Stack {
         ],
       })
     );
+    // Grant DynamoDB read permissions
+    gameStateTable.grantReadData(statesFunction);
 
+    /** API GATEWAY */
     // Create API Gateway
     const api = new apigateway.RestApi(this, 'EverlifeApi', {
       restApiName: 'Everlife Service',
