@@ -10,7 +10,7 @@ import { processCombatTurn, isCombatOver, generateEnemyEncounter } from '../game
 import CombatView from './CombatView';
 import logo from '../assets/logo.png'
 import char from '../assets/char.png';
-import { getSavedState, getStates, loginUser, savedData } from '../services/services';
+import { FILE_URL, getSavedState, getStates, loginUser, savedData } from '../services/services';
 import { defaultPlayerStats } from '../game/states';
 
 interface MessageBoxProps extends BoxOwnProps {
@@ -23,6 +23,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   color: '#ffffff',
   border: '1px solid #4CAF50',
 }));
+
+const audio = new Audio();
 
 const MessageBox = styled(Box)<MessageBoxProps>(({ theme, gameState }) => ({
   className: 'message-box',
@@ -159,6 +161,7 @@ const GameContainer: React.FC = () => {
           playerStats: prevState.playerStats,
           messages: [...prevState.messages, ...state.messages]
         }));
+        playAudio(state);
       }
     } else {
       setGameState((prevState) => ({
@@ -176,7 +179,17 @@ const GameContainer: React.FC = () => {
     const command = target ? `${action} ${target}` : action;
     const newState = processCommand(command, gameState, gameStates, enemies);
     setGameState(newState);
-    savedData(newState, gameStates);
+    //savedData(newState, gameStates);
+    try {
+      console.log('sound', `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`)
+      audio.src = `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`;
+      if(audio.paused || audio.currentTime <= 0 || audio.ended) {
+        audio.play();
+      }
+    }
+    catch (err) {
+      console.log(err);
+    }
   };
 
   const handleDecision = (goto: number, choice?: number) => {
@@ -193,6 +206,19 @@ const GameContainer: React.FC = () => {
       currentEnemy: enemy === null ? undefined : enemy,
       messages: [...prevState.messages, ...state.messages]
     }));
+    playAudio(state);
+  }
+
+  const playAudio = (state: GameState) => {
+    try {
+      audio.src = `${FILE_URL}/step${state.step}${state.choice ? `-${state.choice}` : ''}.mp3`;
+      if(audio.paused || audio.currentTime <= 0 || audio.ended) {
+        audio.play();
+      }
+    }
+    catch (err) {
+      console.log(err);
+    }
   }
 
   const currentLocation = gameState.currentLocation;
@@ -237,6 +263,7 @@ const GameContainer: React.FC = () => {
                   <Typography variant="h6" color="primary" gutterBottom>
                     Actions
                   </Typography>
+
                   <Box sx={{
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -266,6 +293,15 @@ const GameContainer: React.FC = () => {
                     }
 
                   </Box>
+                  {/* <Typography variant="h6" color="primary" gutterBottom sx={{ marginTop: 3 }}> 
+                    Audio
+                  </Typography>
+                  <Box>
+                    <audio autoPlay={true} controls={true}>
+                      <source src="https://everlife-speech.s3.us-east-1.amazonaws.com/step1.mp3" type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </Box> */}
                 </Paper>
               )
             }

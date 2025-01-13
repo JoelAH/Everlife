@@ -1,6 +1,7 @@
 import { GameState } from "../game/types";
 
 const API_URL = 'https://l1vsxl9r5b.execute-api.us-east-1.amazonaws.com/prod';
+export const FILE_URL = 'https://everlife-speech.s3.us-east-1.amazonaws.com'
 
 export const loginUser = async ({ email, password }: { email: string, password: string }) => {
     let success = false;
