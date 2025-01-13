@@ -179,7 +179,7 @@ const GameContainer: React.FC = () => {
     const command = target ? `${action} ${target}` : action;
     const newState = processCommand(command, gameState, gameStates, enemies);
     setGameState(newState);
-    //savedData(newState, gameStates);
+    savedData(newState, gameStates);
     try {
       console.log('sound', `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`)
       audio.src = `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`;
@@ -293,15 +293,6 @@ const GameContainer: React.FC = () => {
                     }
 
                   </Box>
-                  {/* <Typography variant="h6" color="primary" gutterBottom sx={{ marginTop: 3 }}> 
-                    Audio
-                  </Typography>
-                  <Box>
-                    <audio autoPlay={true} controls={true}>
-                      <source src="https://everlife-speech.s3.us-east-1.amazonaws.com/step1.mp3" type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </Box> */}
                 </Paper>
               )
             }
@@ -357,7 +348,7 @@ const GameContainer: React.FC = () => {
                             }
                             setLoading(false);
                           })
-                          .catch((e) => {
+                          .catch(() => {
                             setLoading(false);
                             alert('Something went wrong trying to login')
                           });

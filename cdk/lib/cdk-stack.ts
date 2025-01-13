@@ -4,6 +4,10 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { join } from 'path';
 import * as fs from 'fs';
@@ -12,6 +16,84 @@ import { createGameStateTable, createSavedStateTable } from './game-state';
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // Create S3 bucket for website hosting
+    const websiteBucket = new s3.Bucket(this, 'everlife-bucket', {
+      bucketName: 'everlife-frontend',
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, // Block all public access
+      publicReadAccess: false, // Keep bucket private
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production
+    });
+
+    // Create Origin Access Control
+    const oac = new cloudfront.CfnOriginAccessControl(this, 'OAC', {
+      originAccessControlConfig: {
+        name: 'OAC for website',
+        originAccessControlOriginType: 's3',
+        signingBehavior: 'always',
+        signingProtocol: 'sigv4'
+      }
+    });
+
+    // Create CloudFront distribution with OAC
+    const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
+      defaultBehavior: {
+        origin: new origins.S3Origin(websiteBucket, {
+          originAccessIdentity: undefined // Disable OAI
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
+      defaultRootObject: 'index.html',
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      errorResponses: [
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+        },
+      ],
+    });
+
+    const cfnDistribution = distribution.node.defaultChild as cloudfront.CfnDistribution;
+    cfnDistribution.addPropertyOverride(
+      'DistributionConfig.Origins.0.S3OriginConfig.OriginAccessIdentity',
+      ''
+    );
+    // Connect the OAC to the CloudFront distribution
+    cfnDistribution.addPropertyOverride(
+      'DistributionConfig.Origins.0.OriginAccessControlId',
+      oac.getAtt('Id')
+    );
+
+
+    // Add S3 bucket policy to allow access from CloudFront
+    websiteBucket.addToResourcePolicy(new iam.PolicyStatement({
+      actions: ['s3:GetObject'],
+      resources: [websiteBucket.arnForObjects('*')],
+      principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
+      conditions: {
+        StringEquals: {
+          'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`
+        }
+      }
+    }));
+
+    // Deploy website content to S3
+    new s3deploy.BucketDeployment(this, 'everlife-deploy', {
+      sources: [s3deploy.Source.asset('../dist')],
+      destinationBucket: websiteBucket,
+      distribution: distribution, // Add this to invalidate CloudFront cache after deployment
+      distributionPaths: ['/*'],
+    });
+
+    // Output the CloudFront URL
+    new cdk.CfnOutput(this, 'DistributionDomainName', {
+      value: distribution.distributionDomainName,
+      description: 'Website URL',
+    });
 
     // Create DynamoDB table for game state
     const gameStateTable = createGameStateTable(this);
