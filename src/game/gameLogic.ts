@@ -18,7 +18,7 @@ export const processCommand = (command: string, state: GameState, allGameStates:
 };
 
 const handleForward = (currentState: GameState, allGameStates: GameState[], enemies: Enemy[]): GameState => {
-  if (currentState.step) {
+  if (currentState.step || currentState.step === 0) {
     let newStep = currentState.step + 1;
     let newState = allGameStates.find(s => s.step === newStep);
     while(!newState) {

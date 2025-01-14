@@ -60,7 +60,7 @@ let gameStates: GameState[] = [];
 
 const GameContainer: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
-    "step": 1,
+    "step": 0,
     "mode": "story",
     "messages": [],
     "currentLocation": "Scorched Plains Entry",
@@ -180,16 +180,7 @@ const GameContainer: React.FC = () => {
     const newState = processCommand(command, gameState, gameStates, enemies);
     setGameState(newState);
     savedData(newState, gameStates);
-    try {
-      console.log('sound', `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`)
-      audio.src = `${FILE_URL}/step${newState.step}${newState.choice ? `-${newState.choice}` : ''}.mp3`;
-      if(audio.paused || audio.currentTime <= 0 || audio.ended) {
-        audio.play();
-      }
-    }
-    catch (err) {
-      console.log(err);
-    }
+    playAudio(newState);
   };
 
   const handleDecision = (goto: number, choice?: number) => {

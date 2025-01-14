@@ -77,7 +77,7 @@ export const getSavedState = async () => {
 
 export const savedData = async (state: GameState, allStates: GameState[]) => {
     if (!localStorage.getItem('token')) return;
-    if (state.step === 1) return;
+    if (state.step && state.step <= 1) return;
     const theState = allStates.find(s => s.step === state.step);
     const savedState = {
         ...state,
