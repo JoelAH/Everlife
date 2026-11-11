@@ -21,9 +21,9 @@
     "typescript": "~5.6.3"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.726.0",
-    "@aws-sdk/client-dynamodb": "^3.726.1",
-    "@aws-sdk/client-ssm": "^3.726.1",
+    "@aws-sdk/client-cognito-identity-provider": "^3.1166.0",
+    "@aws-sdk/client-dynamodb": "^3.1166.0",
+    "@aws-sdk/client-ssm": "^3.1166.0",
     "@aws-sdk/util-dynamodb": "^3.726.1",
     "aws-cdk-lib": "2.175.0",
     "aws-jwt-verify": "^5.0.0",
